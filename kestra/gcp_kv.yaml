@@ -1,0 +1,33 @@
+id: gcp_kv
+namespace: dev.bikeshare
+
+tasks:
+  - id: gcp_project_id
+    type: io.kestra.plugin.core.kv.Set
+    key: GCP_PROJECT_ID
+    kvType: STRING
+    value: dtc-de-course-486019
+
+  - id: gcp_location
+    type: io.kestra.plugin.core.kv.Set
+    key: GCP_LOCATION
+    kvType: STRING
+    value: us-central1
+
+  - id: gcp_bucket_name
+    type: io.kestra.plugin.core.kv.Set
+    key: GCP_BUCKET_NAME
+    kvType: STRING
+    value: toronto-bike-share-bucket
+
+  - id: gcp_bq_dataset
+    type: io.kestra.plugin.core.kv.Set
+    key: BQ_RAW_DATASET
+    kvType: STRING
+    value: bikeshare_raw_dataset
+
+  - id: gcp_creds
+    type: io.kestra.plugin.core.kv.Set
+    key: GCP_CREDS
+    kvType: STRING
+    value: ../keys/my-creds.json 

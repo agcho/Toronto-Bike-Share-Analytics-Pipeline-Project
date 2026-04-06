@@ -1,0 +1,229 @@
+id: gcp_bikeshare_pipeline
+namespace: dev.bikeshare
+
+# =========================
+# USER INPUT
+# =========================
+inputs:
+  - id: year
+    type: SELECT
+    displayName: Select year
+    values: [ "2021", "2022", "2023", "2024", "2025", "2026" ]
+    defaults: "2026"
+
+# =========================
+# GLOBAL VARIABLES
+# =========================
+variables:
+  gcs_loc: "gs://toronto-bike-share-bucket"   # Base GCS bucket
+  gcs_file: "{{vars.gcs_loc}}/raw/{{inputs.year}}"       # Folder for CSV files
+
+tasks:
+
+  # =========================
+  # STEP 1: DOWNLOAD + EXTRACT CSV FILES
+  # =========================
+  - id: download_and_extract
+    type: io.kestra.plugin.scripts.python.Script
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    beforeCommands:
+      - pip install requests kestra
+    script: |
+      import requests
+      import zipfile
+      import io
+      import os
+      from kestra import Kestra
+
+      # 1. Fetch dataset metadata from Toronto Open Data API
+      package_url = "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/package_show"
+      package = requests.get(package_url, params={"id": "bike-share-toronto-ridership-data"}).json()
+      year = "{{ inputs.year }}"
+
+      # 2. Find the resource (ZIP file) for selected year
+      resource = next(
+          r for r in package["result"]["resources"]
+          if year in (r.get("name") or "") or year in (r.get("url") or "")
+      )
+      
+      # 3. Download ZIP and process in memory (no disk storage for ZIP)
+      r = requests.get(resource["url"])
+      z = zipfile.ZipFile(io.BytesIO(r.content))
+
+      found_csvs = []
+
+      # Recursive function to handle nested ZIP files
+      def extract_recursive(zip_ref):
+          for file_info in zip_ref.infolist():
+
+              # If nested ZIP → extract recursively
+              if file_info.filename.lower().endswith('.zip'):
+                  with zipfile.ZipFile(io.BytesIO(zip_ref.read(file_info.filename))) as nested:
+                      extract_recursive(nested)
+
+              # If CSV → save to working directory
+              elif file_info.filename.lower().endswith('.csv'):
+                  filename = os.path.basename(file_info.filename)
+                  if filename:
+                      with open(filename, "wb") as f:
+                          f.write(zip_ref.read(file_info.filename))
+                      found_csvs.append(filename)
+
+      # Start extraction
+      extract_recursive(z)
+      
+      # 4. Pass CSV file list to downstream tasks
+      Kestra.outputs({"csv_list": found_csvs})
+    
+    # Capture all CSV files as Kestra outputFiles
+    outputFiles:
+      - "*.csv"
+
+  # =========================
+  # STEP 2: LOOP THROUGH CSV FILES
+  # =========================
+  - id: upload_to_gcs
+    type: io.kestra.plugin.core.flow.ForEach
+
+    # Iterate over CSV list created in Python task
+    values: "{{ outputs.download_and_extract.vars.csv_list }}"
+
+    tasks:
+
+      # -------------------------
+      # Upload CSV to GCS
+      # -------------------------
+      - id: upload_one_file
+        type: io.kestra.plugin.gcp.gcs.Upload
+
+        # Source file from working directory
+        from: "{{ outputs.download_and_extract.outputFiles[taskrun.value] }}"
+
+        # Destination path in GCS (cleaned filename)
+        to: "{{ render(vars.gcs_file) }}/{{ taskrun.value 
+              | replace({'Bike share':'bikeshare'}) 
+              | replace({'ridership':''}) 
+              | replace({'-':'_'}) 
+              | replace({' ':'_'}) 
+              | replace({'__':'_'}) }}"
+
+      # -------------------------
+      # Create main BigQuery table (if not exists)
+      # -------------------------
+      - id: bq_bikeshare_ridership
+        type: io.kestra.plugin.gcp.bigquery.Query
+        sql: |
+          CREATE TABLE IF NOT EXISTS `{{kv('GCP_PROJECT_ID')}}.{{kv('BQ_RAW_DATASET')}}.bikeshare_ridership`
+          (
+              unique_row_id BYTES OPTIONS (description = 'Unique hash ID'),
+              filename STRING OPTIONS (description = 'Source file name'),      
+              Trip_Id STRING,
+              Trip_Duration TIMESTAMP,
+              Start_Station_Id STRING,
+              Start_Time TIMESTAMP,
+              Start_Station_Name STRING,
+              End_Station_Id STRING,
+              End_Time TIMESTAMP,
+              End_Station_Name STRING,
+              Bike_Id STRING,
+              User_Type STRING,
+              Bike_Model STRING
+          )
+          PARTITION BY DATE(Start_Time)
+
+      # -------------------------
+      # Create external table (reads CSV directly from GCS)
+      # -------------------------
+      - id: bq_bikeshare_table_ext
+        type: io.kestra.plugin.gcp.bigquery.Query
+        sql: |
+          CREATE OR REPLACE EXTERNAL TABLE `{{kv('GCP_PROJECT_ID')}}.{{kv('BQ_RAW_DATASET')}}.{{taskrun.value | replace({'.csv':''})}}_ext`
+          (
+            Trip_Id STRING,
+            Trip_Duration TIMESTAMP,
+            Start_Station_Id STRING,
+            Start_Time TIMESTAMP,
+            Start_Station_Name STRING,
+            End_Station_Id STRING,
+            End_Time TIMESTAMP,
+            End_Station_Name STRING,
+            Bike_Id STRING,
+            User_Type STRING,
+            Bike_Model STRING
+          )
+          OPTIONS (
+            format = 'CSV',
+            uris = ['{{ render(vars.gcs_file) }}/{{ taskrun.value }}'],
+            skip_leading_rows = 1,
+            ignore_unknown_values = TRUE
+          )
+
+      # -------------------------
+      # Transform into staging table with unique hash
+      # -------------------------
+      - id: bq_bikeshare_table_tmp
+        type: io.kestra.plugin.gcp.bigquery.Query
+        sql: |
+          CREATE OR REPLACE TABLE `{{kv('GCP_PROJECT_ID')}}.{{kv('BQ_RAW_DATASET')}}.{{taskrun.value | replace({'.csv':''})}}`
+          AS
+          SELECT
+            MD5(CONCAT(
+              COALESCE(CAST(Trip_Id AS STRING), ""),
+              COALESCE(CAST(Start_Time AS STRING), ""),
+              COALESCE(CAST(End_Time AS STRING), ""),
+              COALESCE(CAST(Start_Station_Id AS STRING), ""),
+              COALESCE(CAST(End_Station_Id AS STRING), "")
+            )) AS unique_row_id,
+            "{{ taskrun.value }}" AS filename,
+            *
+          FROM `{{kv('GCP_PROJECT_ID')}}.{{kv('BQ_RAW_DATASET')}}.{{taskrun.value | replace({'.csv':''})}}_ext`;
+
+      # -------------------------
+      # Merge into final table (deduplication)
+      # -------------------------
+      - id: bq_bikeshare_merge
+        type: io.kestra.plugin.gcp.bigquery.Query
+        sql: |
+          MERGE INTO `{{kv('GCP_PROJECT_ID')}}.{{kv('BQ_RAW_DATASET')}}.bikeshare_ridership` T
+          USING `{{kv('GCP_PROJECT_ID')}}.{{kv('BQ_RAW_DATASET')}}.{{taskrun.value | replace({'.csv':''})}}` S
+          ON T.unique_row_id = S.unique_row_id
+          WHEN NOT MATCHED THEN
+            INSERT (
+              unique_row_id, filename, Trip_Id, Trip_Duration,
+              Start_Station_Id, Start_Time, Start_Station_Name,
+              End_Station_Id, End_Time, End_Station_Name,
+              Bike_Id, User_Type, Bike_Model
+            )
+            VALUES (
+              S.unique_row_id, S.filename, S.Trip_Id, S.Trip_Duration,
+              S.Start_Station_Id, S.Start_Time, S.Start_Station_Name,
+              S.End_Station_Id, S.End_Time, S.End_Station_Name,
+              S.Bike_Id, S.User_Type, S.Bike_Model
+            );
+
+  # =========================
+  # STEP 3: CLEANUP
+  # =========================
+  - id: cleanup_tmp
+    type: io.kestra.plugin.scripts.shell.Commands
+    commands:
+      - rm -f *.zip || true
+      - echo "Temporary files cleaned up"
+
+  # Remove execution files from Kestra storage
+  - id: purge_files
+    type: io.kestra.plugin.core.storage.PurgeCurrentExecutionFiles
+    description: Disable this if you want to inspect outputs
+    disabled: false
+
+# =========================
+# DEFAULT GCP CONFIG
+# =========================
+pluginDefaults:
+  - type: io.kestra.plugin.gcp
+    values:
+      serviceAccount: "{{kv('GCP_CREDS')}}"
+      projectId: "{{kv('GCP_PROJECT_ID')}}"
+      location: "{{kv('GCP_LOCATION')}}"
+      bucket: "{{kv('GCP_BUCKET_NAME')}}"
