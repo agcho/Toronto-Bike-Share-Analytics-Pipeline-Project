@@ -1,0 +1,89 @@
+version: 2
+
+models:
+  - name: dim_stations
+    description: "This model contains information about each bike station"
+    columns:
+      - name: station_id
+        description: "Unique identifier for each station."
+        tests:
+          - not_null
+          - unique
+      - name: station_name
+        description: "Name of the station."
+  
+  - name: dim_user_types
+    description: User type dimension table
+    columns:
+      - name: user_type_id
+        description: Unique user type identifier
+        tests:
+          - unique
+          - not_null
+      - name: user_type_name
+        description: Name of the user type
+
+  - name: dim_bike_models
+    description: bike model dimension table
+    columns:
+      - name: bike_model_id
+        description: Unique bike model identifier
+        tests:
+          - unique
+          - not_null
+      - name: user_type_name
+        description: Name of the bike model
+
+  - name: fct_trips
+    description: fact table containing all bike share trips at trip grain with enriched dimension keys and calculated duration
+    columns:
+      - name: trip_id
+        description: unique identifier for each trip
+        tests:
+          - not_null
+          - unique
+
+      - name: trip_duration_minutes
+        description: duration of the trip in minutes calculated from start_time and end_time
+
+      - name: start_station_id
+        description: foreign key referencing dim_stations
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_stations')
+                field: station_id
+
+      - name: start_time
+        description: timestamp when the trip started
+
+      - name: end_station_id
+        description: foreign key referencing dim_stations
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_stations')
+                field: station_id
+
+      - name: end_time
+        description: timestamp when the trip ended
+
+      - name: bike_id
+        description: unique identifier of the bike used for the trip
+
+      - name: bike_model_id
+        description: foreign key referencing dim_bike_models
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_bike_models')
+                field: bike_model_id
+
+      - name: user_type_id
+        description: foreign key referencing dim_user_types
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_user_types')
+                field: user_type_id
