@@ -161,9 +161,6 @@ The Power BI dashboard provides insights into bike share usage patterns.
 - Dashboard file is included under the Dashboard/ directory
 
 ![Dashboard Preview](./images/Dashboard.png)
-<p align="center">
-  <img width="100%" src="images/Dashboard.png" alt="Toronto Bike Share Dashboard">
-</p>
 
 ## Project Structure
 
