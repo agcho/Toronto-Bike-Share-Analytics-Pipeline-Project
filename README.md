@@ -160,7 +160,10 @@ The Power BI dashboard provides insights into bike share usage patterns.
 - Two reporting tiles are actively connected to the warehouse outputs: operational_map_tile and membership_behaviour_tile
 - Dashboard file is included under the Dashboard/ directory
 
-![Dashboard Preview](./images/dashboard.png)
+![Dashboard Preview](./images/Dashboard.png)
+<p align="center">
+  <img width="100%" src="images/Dashboard.png" alt="Toronto Bike Share Dashboard">
+</p>
 
 ## Project Structure
 
