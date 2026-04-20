@@ -259,3 +259,4 @@ terraform.rc
 # planout
 
 *.json
+keys/
