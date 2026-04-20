@@ -1,4 +1,13 @@
+![GCP](https://img.shields.io/badge/GCP-4285F4?style=flat-square&logo=googlecloud&logoColor=white)
+![Kestra](https://img.shields.io/badge/Kestra-2F2F2F?style=flat-square&logo=apache&logoColor=white)
+![dbt](https://img.shields.io/badge/dbt-FF694B?style=flat-square&logo=dbt&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
 ![BigQuery](https://img.shields.io/badge/BigQuery-4285F4?style=flat-square&logo=googlebigquery&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-623CE4?style=flat-square&logo=terraform&logoColor=white)
+![Power BI](https://img.shields.io/badge/Power%20BI-F2C811?style=flat-square&logo=powerbi&logoColor=black)
+
+
 
 # Toronto Bike Share Analytics Pipeline
 
@@ -151,7 +160,10 @@ The Power BI dashboard provides insights into bike share usage patterns.
 - Two reporting tiles are actively connected to the warehouse outputs: operational_map_tile and membership_behaviour_tile
 - Dashboard file is included under the Dashboard/ directory
 
-![Dashboard Preview](images/dashboard.png)
+![Dashboard Preview](./images/Dashboard.png)
+<p align="center">
+  <img width="100%" src="images/Dashboard.png" alt="Toronto Bike Share Dashboard">
+</p>
 
 ## Project Structure
 
