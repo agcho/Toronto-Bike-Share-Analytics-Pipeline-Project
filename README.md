@@ -11,7 +11,7 @@
 
 # Toronto Bike Share Analytics Pipeline
 
-A modern end-to-end data analytics pipeline for Toronto Bike Share ridership data. This project automates ingestion, transformation, and analytics using Google Cloud Platform (GCP), dbt, Kestra, Terraform, and Power BI.
+A modern end-to-end batch data analytics pipeline for Toronto Bike Share ridership data. This project automates ingestion, transformation, and analytics using Google Cloud Platform (GCP), dbt, Kestra, Terraform, and Power BI.
 
 ## Project Overview
 
