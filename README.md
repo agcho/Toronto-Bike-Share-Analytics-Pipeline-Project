@@ -200,7 +200,7 @@ toronto-bike-share-analytics-pipeline/
 ├── keys/                         # Credentials (git-ignored)
 │   └── my-creds.json
 │
-├── Dashboard/                    
+├── dashboard/                    
 |   └── Toronto-Bike-Share-Dashboard.pbix
 │
 └── README.md                     
@@ -337,10 +337,10 @@ dbt test
 
 ## Troubleshooting
 
-**Kestra not starting**: Check Docker daemon running; verify ports 8080, 5432 are free |
-**BigQuery connection fails**: Verify GCP credentials file path and permissions |
-**dbt model fails**: Check `dbt debug`, verify dataset and source references |
-**Data not appearing**: Monitor Kestra task logs; check GCS bucket contents |
+-**Kestra not starting**: Check Docker daemon running; verify ports 8080, 5432 are free 
+-**BigQuery connection fails**: Verify GCP credentials file path and permissions
+-**dbt model fails**: Check `dbt debug`, verify dataset and source references
+-**Data not appearing**: Monitor Kestra task logs; check GCS bucket contents
 
 ## Final Notes
 
