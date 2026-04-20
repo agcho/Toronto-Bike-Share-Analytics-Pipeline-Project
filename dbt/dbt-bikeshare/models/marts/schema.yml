@@ -11,7 +11,7 @@ models:
           - unique
       - name: station_name
         description: "Name of the station."
-  
+
   - name: dim_user_types
     description: User type dimension table
     columns:
@@ -35,7 +35,8 @@ models:
         description: Name of the bike model
 
   - name: fct_trips
-    description: fact table containing all bike share trips at trip grain with enriched dimension keys and calculated duration
+    description: fact table containing all bike share trips at trip grain with
+      enriched dimension keys and calculated duration
     columns:
       - name: trip_id
         description: unique identifier for each trip
@@ -49,7 +50,6 @@ models:
       - name: start_station_id
         description: foreign key referencing dim_stations
         tests:
-          - not_null
           - relationships:
               arguments:
                 to: ref('dim_stations')
@@ -87,3 +87,110 @@ models:
               arguments:
                 to: ref('dim_user_types')
                 field: user_type_id
+
+  - name: member_engagement_metrics
+    description: |
+      # Member Engagement Metrics
+
+      Aggregated engagement and activity metrics by user type (Member vs Casual).
+      This reporting table shows trip frequency, duration, behavior patterns, and user retention indicators.
+
+      **Grain:** One row per user type
+      **Refresh:** Incremental (with fct_trips)
+      **Use Case:** Monitor member vs casual rider engagement, identify retention patterns
+    columns:
+      - name: user_type_id
+        description: Unique user type identifier
+        tests:
+          - unique
+          - not_null
+
+      - name: user_type_name
+        description: User type name (Casual or Member)
+
+      - name: total_trips
+        description: Total number of trips for this user type
+
+      - name: unique_bikes_used
+        description: Number of unique bikes used by this user type
+
+      - name: avg_trip_duration_minutes
+        description: Average trip duration in minutes
+
+      - name: min_trip_duration_minutes
+        description: Minimum trip duration in minutes
+
+      - name: max_trip_duration_minutes
+        description: Maximum trip duration in minutes
+
+      - name: total_trip_minutes
+        description: Total aggregated trip duration in minutes
+
+      - name: active_days
+        description: Number of distinct calendar days with trips
+
+      - name: avg_trips_per_active_day
+        description: Average trips per day on days the user type had activity
+
+      - name: first_trip_date
+        description: Date of the earliest trip for this user type
+
+      - name: last_trip_date
+        description: Date of the most recent trip for this user type
+
+      - name: days_since_first_trip
+        description: Number of days between first and last trip (retention window)
+
+  - name: trip_flow_summary
+    description: |
+      # Trip Flow Summary
+
+      Station-to-station trip flow analysis showing popular routes, traffic patterns, and route metrics.
+      Each row represents a unique origin-destination pair with aggregated metrics.
+
+      **Grain:** One row per origin-destination station pair
+      **Refresh:** Incremental (with fct_trips)
+      **Use Case:** Identify popular routes, understand station-to-station demand, analyze trip patterns
+    columns:
+      - name: start_station_id
+        description: Unique identifier of the starting station
+        tests:
+          - not_null
+
+      - name: start_station_name
+        description: Name of the starting station
+
+      - name: end_station_id
+        description: Unique identifier of the ending station
+        tests:
+          - not_null
+
+      - name: end_station_name
+        description: Name of the ending station
+
+      - name: total_trips
+        description: Total number of trips on this route (start to end station)
+
+      - name: pct_of_total_trips
+        description: Percentage of all trips represented by this route
+
+      - name: route_rank
+        description: Rank of this route by total trips (1 = most popular)
+
+      - name: avg_trip_duration_minutes
+        description: Average trip duration for trips on this route
+
+      - name: total_trip_minutes
+        description: Total aggregated trip duration for this route
+
+      - name: active_days
+        description: Number of distinct calendar days with trips on this route
+
+      - name: avg_trips_per_day
+        description: Average number of trips per day this route is used
+
+      - name: earliest_trip
+        description: Timestamp of the first trip on this route
+
+      - name: latest_trip
+        description: Timestamp of the most recent trip on this route

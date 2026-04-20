@@ -31,8 +31,9 @@ WITH user_type AS (
         {{ ref('stg_bikeshare_data') }} sbd
         LEFT JOIN user_type ut ON LOWER(TRIM(ut.user_type_name)) = LOWER(TRIM(sbd.user_type))
         LEFT JOIN bike_model bm ON LOWER(TRIM(bm.bike_model_name)) = LOWER(TRIM(sbd.bike_model))
+    WHERE sbd.start_station_id IS NOT NULL
 )
 
--- Remove duplicate trips by keeping only earliest record for each trip_id, based on the end_time
+-- Remove duplicate trips by keeping only latest record for each trip_id
 SELECT * FROM cleaned_trips
-QUALIFY row_number() OVER (PARTITION BY trip_id, start_station_id, end_station_id ORDER BY end_time) = 1
+QUALIFY row_number() OVER (PARTITION BY trip_id ORDER BY end_time DESC, file_name) = 1

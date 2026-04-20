@@ -2,7 +2,7 @@ SELECT
     unique_row_id,
     filename AS file_name,
     Trip_Id AS trip_id,
-    cast(Trip_Duration AS timestamp) AS trip_duration,
+    cast(Trip_Duration AS numeric) AS trip_duration,
     Start_Station_Id AS start_station_id,
     cast(Start_Time AS timestamp) AS start_time,
     Start_Station_Name AS start_station_name,

@@ -2,54 +2,37 @@
   config(
     materialized='incremental',
     unique_key='trip_id',
-    on_schema_change='fail'
+
+    partition_by={
+      "field": "start_time",
+      "data_type": "timestamp",
+      "granularity": "month"
+    },
+
+    clustering=["user_type_id", "bike_model_id"],
+
+    on_schema_change='append_new_columns'
   )
 }}
 
-WITH alltrips AS (
-    SELECT * 
-    FROM {{ ref("int_bikeshare_trips") }}
-),
-
-trips AS (
-    SELECT
-        t.trip_id,
-
-        -- duration in minutes
-        TIMESTAMP_DIFF(t.end_time, t.start_time, SECOND) / 60 AS trip_duration_minutes,
-
-        -- stations
-        st.station_id AS start_station_id,
-        t.start_time,
-
-        et.station_id AS end_station_id,
-        t.end_time,
-
-        t.bike_id,
-        t.bike_model_id,
-        t.user_type_id
-
-    FROM alltrips t
-
-    LEFT JOIN {{ ref("dim_stations") }} st
-        ON st.station_id = t.start_station_id
-
-    LEFT JOIN {{ ref("dim_stations") }} et
-        ON et.station_id = t.end_station_id
-
-    LEFT JOIN {{ ref("dim_bike_models") }} bm
-        ON bm.bike_model_id = t.bike_model_id
-
-    LEFT JOIN {{ ref("dim_user_types") }} ut
-        ON ut.user_type_id = t.user_type_id
-)
-
-SELECT *
-FROM trips
-
+SELECT
+    trip_id,
+    TIMESTAMP_DIFF(end_time, start_time, SECOND) / 60 AS trip_duration_minutes,
+    start_station_id,
+    start_station_name,
+    start_time,
+    end_station_id,
+    end_station_name,
+    end_time,
+    bike_id,
+    bike_model_id,
+    user_type_id
+FROM {{ ref("int_bikeshare_trips") }}
+WHERE start_station_id IS NOT NULL
+    --AND end_station_id IS NOT NULL
 {% if is_incremental() %}
-WHERE start_time >= (
-    SELECT COALESCE(MAX(start_time), TIMESTAMP('1900-01-01'))
-    FROM {{ this }}
-)
+    AND start_time > (
+        SELECT MAX(start_time)
+        FROM {{ this }}
+    )
 {% endif %}
