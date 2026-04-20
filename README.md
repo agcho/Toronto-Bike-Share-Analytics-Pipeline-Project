@@ -54,12 +54,12 @@ Google Cloud Storage (Raw Data Lake)
 All infrastructure is provisioned using Terraform on Google Cloud Platform.
 
 #### Provisioned Resources
-    - Google Cloud Storage Bucket
-      - Stores raw Parquet files
-      - Path: gs://toronto-bike-share-bucket/raw/{year}
-    - BigQuery Dataset
-      - Dataset: bikeshare_raw_dataset
-      - Stores raw and transformed tables
+    1. **Google Cloud Storage Bucket**
+       - Stores raw Parquet files
+       - Path: gs://toronto-bike-share-bucket/raw/{year}
+    2. **BigQuery Dataset**
+       - Dataset: bikeshare_raw_dataset
+       - Stores raw and transformed tables
 
 #### Infrastructure as Code Benefits
      - Fully reproducible environment
