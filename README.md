@@ -133,7 +133,7 @@ These models are designed to power dashboard and visualization use cases.
 - Station details (start and end station IDs and names)
 - Bike and user type dimension keys (bike_model_id, user_type_id)
 
-***Modeling Strategy**:
+**Modeling Strategy**:
 - Materialization: Incremental model (append + merge strategy) using trip_id as the unique key
 - Partitioning: By start_time (monthly partitions)
 - Clustering: By user_type_id and bike_model_id for query optimization
@@ -267,7 +267,7 @@ toronto-bike-share-analytics-pipeline/
    - Validats connection to BigQuery
    - Builds models and runs tests
 
-6. **Power BI Dashboard:**
+6. **Power BI Dashboard:** 
    - The dashboard file is available at Dashboard/Toronto-Bike-Share-Dashboard.pbix
    - Open it using Power BI Desktop and configure credentials for your BigQuery project
    - Visuals are powered by dbt marts and reporting models, especially member_engagement_metrics and trip_flow_summary
@@ -276,6 +276,7 @@ toronto-bike-share-analytics-pipeline/
 ## Running the Pipeline
 
 ### Kestra Web UI
+
 1. Navigate to `http://localhost:8080`
 2. Upload `kestra/gcp_bikeshare_pipeline.yaml`
 3. Select year from dropdown
@@ -299,9 +300,11 @@ dbt test
 ## GCP Infrastructure
 
 ### Terraform provisions:
+
 - **Cloud Storage Bucket**: `toronto-bike-share-bucket`
   - Raw data location: `gs://toronto-bike-share-bucket/raw/{year}`
   - Lifecycle rule: Deletes incomplete multipart uploads after 1 day
+  - 
 - **BigQuery Dataset**: `bikeshare_raw_dataset`
   - Location: Configurable (default: us-central1)
   - Contains raw bikeshare trip records
@@ -309,17 +312,20 @@ dbt test
 ## Configuration Files
 
 ### Kestra (`gcp_bikeshare_pipeline.yaml`)
+
 - Pipeline ID: `gcp_bikeshare_pipeline`
 - Namespace: `dev.bikeshare`
 - Inputs: Year selection (2022-2026)
 - Tasks: Download, extract, validate, load to BigQuery
 
 ### dbt (`dbt_project.yml`)
+
 - Project name: `bikeshare_pipeline`
 - Version: `1.0.0`
 - Profile: `bikeshare_pipeline`
 
 ### Terraform (`main.tf`, `variables.tf`)
+
 - Provider: Google Cloud
 - Credentials: Environment variable or file
 - Region/Location: Configurable
