@@ -9,8 +9,6 @@
       "granularity": "month"
     },
 
-    clustering=["user_type_id", "bike_model_id"],
-
     on_schema_change='append_new_columns'
   )
 }}
