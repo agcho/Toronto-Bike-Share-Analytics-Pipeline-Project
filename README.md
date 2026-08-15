@@ -197,8 +197,7 @@ toronto-bike-share-analytics-pipeline/
 │
 ├── terraform/                    
 │   ├── main.tf                   
-│   ├── variables.tf              
-│   └── terraform.tfstate         
+│   ├── variables.tf                     
 │
 ├── keys/                         # Credentials (git-ignored)
 │   └── my-creds.json
