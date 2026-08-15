@@ -11,13 +11,13 @@
 
 # Toronto Bike Share Analytics Pipeline
 
-A modern end-to-end batch data analytics pipeline for Toronto Bike Share ridership data. This project automates ingestion, transformation, and analytics using Google Cloud Platform (GCP), dbt, Kestra, Terraform, and Power BI.
+An end-to-end batch data engineering pipeline that ingests Toronto Bike Share ridership data, orchestrates processing with Kestra, stores raw data in Google Cloud Storage, transforms and models data in BigQuery using dbt, provisions cloud infrastructure with Terraform, and delivers analytics through Power BI.
 
 ## Project Overview
 
 This pipeline collects Toronto Bike Share trip data from the City of Toronto open data portal and transforms it into analytics-ready datasets using a modern ELT architecture.
 
-It is designed to demonstrate production-grade data engineering practices including orchestration, data warehousing, transformations, testing, and visualization.
+It is designed to demonstrate production-oriented data engineering practices including orchestration, data warehousing, transformations, testing, and visualization.
 
 **Key Features:**
 - Automated ingestion from Toronto Open Data API
@@ -120,7 +120,7 @@ Fact model:
 - fct_trips
 
 Reporting Models
-- member_engagement_matrics
+- member_engagement_metrics
 - trip_flow_summary
 
 These models are designed to power dashboard and visualization use cases.
@@ -219,7 +219,7 @@ toronto-bike-share-analytics-pipeline/
   - Cloud Storage API enabled
   - Service account with appropriate permissions
 - Python 3.10+ (for local dbt development)
-- dbt cloud + dbt-bigquery
+- dbt Core + dbt-bigquery
 
 ### Installation
 
@@ -255,7 +255,7 @@ toronto-bike-share-analytics-pipeline/
    ```
    Kestra UI will be available at `http://localhost:8080`
 
-5. **Run dbt (dbt cloud):**
+5. **Run dbt (dbt Core):**
    ```bash
    cd dbt/dbt-bikeshare
    dbt debug
@@ -263,7 +263,7 @@ toronto-bike-share-analytics-pipeline/
    dbt run
    dbt test
    ```
-   - Validats connection to BigQuery
+   - Validates connection to BigQuery
    - Builds models and runs tests
 
 6. **Power BI Dashboard:** 
@@ -314,7 +314,7 @@ dbt test
 
 - Pipeline ID: `gcp_bikeshare_pipeline`
 - Namespace: `dev.bikeshare`
-- Inputs: Year selection (2022-2026)
+- Inputs: Year selection (2023-2026)
 - Tasks: Download, extract, validate, load to BigQuery
 
 ### dbt (`dbt_project.yml`)
@@ -358,7 +358,6 @@ The architecture is designed to be modular, scalable, and production-oriented, w
 
 ## Future Enhancements
 
-- Future Enhancements
 - Streaming ingestion (Kafka / PubSub)
 - Predictive demand forecasting
 - Geospatial station clustering & heatmaps
