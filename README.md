@@ -161,7 +161,7 @@ The Power BI dashboard provides insights into bike share usage patterns.
 **Current Project State**:
 - Warehouse models and data quality tests are fully implemented
 - Two reporting tiles are actively connected to the warehouse outputs: operational_map_tile and membership_behaviour_tile
-- Dashboard file is included under the Dashboard/ directory
+- Dashboard file is included under the dashboard/ directory
 
 ![Dashboard Preview](./images/dashboard.png)
 
@@ -268,7 +268,7 @@ toronto-bike-share-analytics-pipeline/
    - Builds models and runs tests
 
 6. **Power BI Dashboard:** 
-   - The dashboard file is available at Dashboard/Toronto-Bike-Share-Dashboard.pbix
+   - The dashboard file is available at dashboard/Toronto-Bike-Share-Dashboard.pbix
    - Open it using Power BI Desktop and configure credentials for your BigQuery project
    - Visuals are powered by dbt marts and reporting models, especially member_engagement_metrics and trip_flow_summary
    - If table names match the dbt project structure, the dashboard will refresh with minimal configuration changes
