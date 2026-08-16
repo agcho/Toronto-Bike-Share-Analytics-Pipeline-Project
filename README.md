@@ -289,8 +289,11 @@ cd dbt/dbt-bikeshare
 # Run all models
 dbt run
 
-# Run with freshness checks
+# Build models and run tests
 dbt build
+
+# Check source freshness
+dbt source freshness
 
 # Run tests
 dbt test
@@ -303,7 +306,7 @@ dbt test
 - **Cloud Storage Bucket**: `toronto-bike-share-bucket`
   - Raw data location: `gs://toronto-bike-share-bucket/raw/{year}`
   - Lifecycle rule: Deletes incomplete multipart uploads after 1 day
-  - 
+
 - **BigQuery Dataset**: `bikeshare_raw_dataset`
   - Location: Configurable (default: us-central1)
   - Contains raw bikeshare trip records
@@ -339,16 +342,15 @@ dbt test
 ## Monitoring & Logging
 
 - Kestra logs: Available in UI and docker logs
-- Query logs: `logs/query_log.sql`
 - dbt logs: `dbt/dbt-bikeshare/logs/`
 - BigQuery audit logs: GCP Console
 
 ## Troubleshooting
 
--**Kestra not starting**: Check Docker daemon running; verify ports 8080, 5432 are free 
--**BigQuery connection fails**: Verify GCP credentials file path and permissions
--**dbt model fails**: Check `dbt debug`, verify dataset and source references
--**Data not appearing**: Monitor Kestra task logs; check GCS bucket contents
+- **Kestra not starting**: Check Docker daemon running; verify ports 8080, 5432 are free 
+- **BigQuery connection fails**: Verify GCP credentials file path and permissions
+- **dbt model fails**: Check `dbt debug`, verify dataset and source references
+- **Data not appearing**: Monitor Kestra task logs; check GCS bucket contents
 
 ## Final Notes
 
